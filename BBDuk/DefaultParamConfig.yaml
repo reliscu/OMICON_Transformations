@@ -1,0 +1,10 @@
+projectname: projectname
+analyst: Rebecca Eliscu
+ref: /home/shared/programs/bbmap/resources/adapters.fa
+ktrim: r 
+k: 23
+kmin: 11
+hdist: 1
+minlen: 60
+tpe: tpe 
+tbo: tbo 

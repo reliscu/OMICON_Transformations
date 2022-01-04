@@ -1,0 +1,56 @@
+configfile: "../config/ParamConfig.yaml"
+tranformation = "BBDuk"
+shell("Rscript /home/rebecca/omicon/transformations/helper_functions/compareConfig.R")
+
+sample, = glob_wildcards("../resources/{sample}_R1_FASTQ.fastq")
+
+rule all:
+   input: 
+      expand(["../results/{projectname}_RawReads/{sample}_R1_trimmed_FASTQ.fastq", 
+              "../results/{projectname}_RawReads/{sample}_R2_trimmed_FASTQ.fastq"], projectname = config['projectname'], sample = sample),  
+      expand(["../results/{projectname}_{transformation}/{projectname}_SessionInfo.csv", 
+              "../results/{projectname}_{transformation}/{projectname}_ParamConfig.yaml"], projectname = config['projectname'], transformation = transformation)
+
+rule BBDuk_PE:
+   input:
+      ["../resources/{sample}_R1_FASTQ.fastq", "../resources/{sample}_R2_FASTQ.fastq"]
+   output:
+      ["../results/{projectname}_RawReads/{sample}_R1_trimmed_FASTQ.fastq", 
+       "../results/{projectname}_RawReads/{sample}_R2_trimmed_FASTQ.fastq"]                                                                
+   params:
+      ref = lambda wc: config['ref'],
+      ktrim = lambda wc: config['ktrim'],
+      k = lambda wc: config['k'],
+      kmin = lambda wc: config['kmin'],
+      hdist = lambda wc: config['hdist'],
+      minlen = lambda wc: config['minlen'],
+      tpe = lambda wc: config['tpe'],
+      tbo = lambda wc: config['tbo']
+   run: 
+      reads = "in={} in2={}".format(*input)
+      trimmed = "out={} out2={}".format(*output.trimmed)
+      command = " ".join([
+         reads,
+	 "ref=" + str(params.ref), 
+      	 "ktrim=" + str(params.ktrim), 
+      	 "k=" + str(params.k),
+	 "kmin=" + str(params.kmin),
+	 "hdist=" + str(params.hdist),
+	 "minlen=" + str(params.minlen),
+	 params.tpe,
+	 params.tbo,
+	 trimmed
+	 ])
+      shell("/home/shared/programs/bbmap/bbduk.sh -Xmx1g {command}")
+
+rule session_info:
+   output:
+      "../results/{projectname}_SessionInfo.csv"
+   script:
+      "/home/rebecca/omicon/transformations/helper_functions/makeSessionInfo.R"
+
+rule param_config:
+   output:
+      "../results/{projectname}_{transformation}/{projectname}_ParamConfig.yaml"
+   shell:
+      "cp ../config/ParamConfig.yaml ../results/{wildcards.projectname}_{transformation}/{wildcards.projectname}_ParamConfig.yaml"
