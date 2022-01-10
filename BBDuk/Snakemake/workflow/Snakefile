@@ -1,22 +1,30 @@
-configfile: "../config/ParamConfig.yaml"
-tranformation = "BBDuk"
-shell("Rscript /home/rebecca/omicon/transformations/helper_functions/compareConfig.R")
+transformation = "BBDuk"
 
-sample, = glob_wildcards("../resources/{sample}_R1_FASTQ.fastq")
+workdir: "/home/rebecca/omicon/transformations/" + transformation
+configfile: "Snakemake/config/ParamConfig.yaml"
+include: "/home/rebecca/omicon/transformations/helper_functions/helper.smk"
+shell("Rscript /home/rebecca/omicon/transformations/helper_functions/updateConfig/updateConfig.R")
+
+sample, = glob_wildcards("Snakemake/resources/{sample}_R1_FASTQ.fastq")
 
 rule all:
    input: 
-      expand(["../results/{projectname}_RawReads/{sample}_R1_trimmed_FASTQ.fastq", 
-              "../results/{projectname}_RawReads/{sample}_R2_trimmed_FASTQ.fastq"], projectname = config['projectname'], sample = sample),  
-      expand(["../results/{projectname}_{transformation}/{projectname}_SessionInfo.csv", 
-              "../results/{projectname}_{transformation}/{projectname}_ParamConfig.yaml"], projectname = config['projectname'], transformation = transformation)
+      expand(["Snakemake/results/{projectname}_RawReads/{sample}_R1_trimmed_FASTQ.fastq", 
+              "Snakemake/results/{projectname}_RawReads/{sample}_R2_trimmed_FASTQ.fastq"], 
+	      projectname = config['projectname'], 
+	      sample = sample),  
+      expand(["Snakemake/results/{projectname}_{transformation}/{projectname}_SessionInfo.csv", 
+              "Snakemake/results/{projectname}_{transformation}/{projectname}_ParamConfig.yaml"], 
+	      projectname = config['projectname'], 
+	      transformation = transformation)
 
 rule BBDuk_PE:
    input:
-      ["../resources/{sample}_R1_FASTQ.fastq", "../resources/{sample}_R2_FASTQ.fastq"]
+      ["Snakemake/resources/{sample}_R1_FASTQ.fastq", 
+       "Snakemake/resources/{sample}_R2_FASTQ.fastq"]
    output:
-      ["../results/{projectname}_RawReads/{sample}_R1_trimmed_FASTQ.fastq", 
-       "../results/{projectname}_RawReads/{sample}_R2_trimmed_FASTQ.fastq"]                                                                
+      ["Snakemake/results/{projectname}_RawReads/{sample}_R1_trimmed_FASTQ.fastq", 
+       "Snakemake/results/{projectname}_RawReads/{sample}_R2_trimmed_FASTQ.fastq"]                                                                
    params:
       ref = lambda wc: config['ref'],
       ktrim = lambda wc: config['ktrim'],
@@ -28,7 +36,7 @@ rule BBDuk_PE:
       tbo = lambda wc: config['tbo']
    run: 
       reads = "in={} in2={}".format(*input)
-      trimmed = "out={} out2={}".format(*output.trimmed)
+      trimmed = "out={} out2={}".format(*output)
       command = " ".join([
          reads,
 	 "ref=" + str(params.ref), 
@@ -43,14 +51,3 @@ rule BBDuk_PE:
 	 ])
       shell("/home/shared/programs/bbmap/bbduk.sh -Xmx1g {command}")
 
-rule session_info:
-   output:
-      "../results/{projectname}_SessionInfo.csv"
-   script:
-      "/home/rebecca/omicon/transformations/helper_functions/makeSessionInfo.R"
-
-rule param_config:
-   output:
-      "../results/{projectname}_{transformation}/{projectname}_ParamConfig.yaml"
-   shell:
-      "cp ../config/ParamConfig.yaml ../results/{wildcards.projectname}_{transformation}/{wildcards.projectname}_ParamConfig.yaml"

@@ -1,0 +1,35 @@
+## Note: All input files must reside in ../resources
+
+projectname: projectname
+analyst: Rebecca Eliscu
+mappingTable: Affymetrix_Human_Gene_1.0_ST_Transcript_Cluster_PROBEID_SYMBOL.csv
+expr: E-MEXP-3239_All_40_ComBat.csv 
+geneinfo: [1,2]
+sampleindexStart: 3
+sampleindexEnd: ncol(expr) # Must be numeric or R expression that evaluates to the column index of the last sample in expr
+samplegroups: NULL # If not NULL, must be name of .RDS file that contains a vector of length sampleindex 
+subset: NULL # If not NULL, must be name of .RDS file that contains a logical vector of length nrow(expr)
+simMat: NULL
+saveSimMat: FALSE
+simType: Bicor
+beta: 1
+overlapType: None
+TOtype: signed
+TOdenom: min
+MIestimator: mi.mm
+MIdisc: equalfreq
+signumType: rel
+iterate: TRUE
+signumvec: [.9999,.999,.99,.98,.97,.96]
+minsizevec: [6,8,10,12,15,20]
+signum: NULL
+minSize: NULL
+merge.by: CC
+merge.param: .85
+export.merge.comp: TRUE
+ZNCcut: 2
+calcSW: FALSE
+loadTree: FALSE
+writeKME: TRUE
+calcBigModStat: FALSE
+writeModSnap: TRUE

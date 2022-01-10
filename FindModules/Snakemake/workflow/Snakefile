@@ -1,0 +1,62 @@
+transformation = "FindModules"
+
+workdir: "/home/rebecca/omicon/transformations/" + transformation
+configfile: "Snakemake/config/ParamConfig.yaml"
+include: "/home/rebecca/omicon/transformations/helper_functions/helper.smk" 
+shell("Rscript /home/rebecca/omicon/transformations/helper_functions/updateConfig/updateConfig.R")
+
+if config['overlapType'] != 'None':
+   networks = expand(["Snakemake/results/{simType}-{overlapType}_{TOtype}_{TOdenom}_signum{signumvec}_minSize{minsizevec}_merge_{mergeBy}_{mergeParam}",
+                      "Snakemake/results/{simType}-{overlapType}_p{beta}_{projectname}_network_statistics.csv",
+                      "Snakemake/results/{simType}-{overlapType}_p{beta}_{projectname}_network_statistics.pdf",
+                      "Snakemake/results/{simType}_p{beta}_{projectname}_dendrogram.pdf",
+                      "Snakemake/results/{simType}_p{beta}_{projectname}_clustering"],
+                      simType = config['simType'],        
+                      overlapType = config['overlapType'],        
+                      beta = config['beta'],
+                      projectname = config['projectname'],
+                      signumvec = config['signumvec'],        
+                      minsizevec = config['minsizevec'],        
+                      mergeBy = config['merge.by'],        
+                      mergeParam = config['merge.param']) 
+else:
+   networks = expand(["Snakemake/results/{simType}-{overlapType}_signum{signumvec}_minSize{minsizevec}_merge_{mergeBy}_{mergeParam}",
+                      "Snakemake/results/{simType}-{overlapType}_p{beta}_{projectname}_network_statistics.csv",
+                      "Snakemake/results/{simType}-{overlapType}_p{beta}_{projectname}_network_statistics.pdf",
+                      "Snakemake/results/{simType}_p{beta}_{projectname}_dendrogram.pdf",
+                      "Snakemake/results/{simType}_p{beta}_{projectname}_clustering"],
+                      simType = config['simType'],        
+                      overlapType = config['overlapType'],        
+                      beta = config['beta'],
+                      projectname = config['projectname'],
+                      signumvec = config['signumvec'],        
+                      minsizevec = config['minsizevec'],        
+                      mergeBy = config['merge.by'],        
+                      mergeParam = config['merge.param'])
+
+rule all:
+   input:
+      networks,
+      expand(["Snakemake/results/{projectname}_{transformation}/{projectname}_SessionInfo.csv", 
+              "Snakemake/results/{projectname}_{transformation}/{projectname}_ParamConfig.yaml"], 
+	      projectname = config['projectname'], 
+	      transformation = transformation)
+
+rule map_identifiers:
+   input: 
+      expr = lambda wc: "Snakemake/resources/" + str(config['expr']),
+      mappingTable = lambda wc: "Snakemake/resources/" + str(config['mappingTable'])
+   output: 
+      temp("Snakemake/results/expr.csv")
+   script:
+      "/home/rebecca/omicon/transformations/helper_functions/map2Symbol.R"
+
+rule FindModules:
+   input:
+      "Snakemake/results/expr.csv"
+   output:
+      networks
+   threads: 10
+   script:
+      "../../FindModules_Driver.R"
+

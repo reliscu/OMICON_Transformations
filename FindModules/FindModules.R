@@ -24,52 +24,48 @@
 ## 0.86 makes minor modifications for cluster compatibility (time stamp, .libPaths).
 ## 0.86 also increases the maximum initial module size from 435 (standardColors()) to 657 (colors()).  
 ## Note that we have standardColors appear in the colorvec first (in the same order as before), followed by the non-standardColors (i.e. the grey colors).
-
-.libPaths("/home/shared/R/x86_64-pc-linux-gnu-library/4.0")
-
 library(WGCNA)
 library(flashClust)
 library(cluster)
 library(svMisc)
 library(Biobase)
-library(lattice) ## 3D plots
+library(lattice) 
 library(qvalue)
-library(ellipse) ## plotcorr function
-library(purrr) ## required for merging by CC
-
-allowWGCNAThreads()
+library(ellipse)
+library(purrr)
+library(data.table)
 
 FindModules=function(
-  projectname,
-  expr,
-  geneinfo,
-  sampleindex,
-  samplegroups=NULL,
-  subset=NULL,
-  simMat=NULL,
-  saveSimMat=FALSE,
-  simType=c("Pearson","Spearman","Bicor","MI","Jaccard"),
-  overlapType=c("None","TO","Pearson","Spearman","Bicor"),
-  TOtype=c("none","signed","unsigned"),
-  TOdenom=c("none","min","mean"),
-  beta=1,
-  MIestimator="mi.mm",
-  MIdisc="equalfreq",
-  signumType=c("abs","rel"),
-  iterate=FALSE,
-  signumvec=c(.999,.99,.98),
-  minsizevec=c(8,10,12),
-  signum,
-  minSize,
-  merge.by=c("ME","CC"),
-  merge.param,
-  export.merge.comp=T,
-  ZNCcut=2,
-  calcSW=FALSE,
-  loadTree=FALSE,
-  writeKME=FALSE,
-  calcBigModStat=FALSE,
-  writeModSnap=TRUE
+projectname,
+expr,
+geneinfo,
+sampleindex,
+samplegroups=NULL,
+subset=NULL,
+simMat=NULL,
+saveSimMat=FALSE,
+simType=c("Pearson","Spearman","Bicor","MI","Jaccard"),
+overlapType=c("None","TO","Pearson","Spearman","Bicor"),
+TOtype=c("none","signed","unsigned"),
+TOdenom=c("none","min","mean"),
+beta=1,
+MIestimator="mi.mm",
+MIdisc="equalfreq",
+signumType=c("abs","rel"),
+iterate=FALSE,
+signumvec=c(.999,.99,.98),
+minsizevec=c(8,10,12),
+signum,
+minSize,
+merge.by=c("ME","CC"),
+merge.param,
+export.merge.comp=T,
+ZNCcut=2,
+calcSW=FALSE,
+loadTree=FALSE,
+writeKME=FALSE,
+calcBigModStat=FALSE,
+writeModSnap=TRUE
 ){
 	
 	timestamp()
@@ -742,15 +738,15 @@ FindModules=function(
 		
 		  cluster1=flashClust(as.dist(disSimMat),method="complete")
 			collectGarbage()
-			save(cluster1,file=paste(simType,"-",overlapType,"_",TOtype,"_",TOdenom,"_p",beta,"_",projectname,"_",length(cluster1$order),"_clustering",sep=""))
-      dendroname=paste(simType,"-",overlapType,"_",TOtype,"_",TOdenom,"_p",beta,"_",projectname,"_",length(cluster1$order),"_dendrogram.pdf",sep="")
+			save(cluster1,file=paste(simType,"-",overlapType,"_",TOtype,"_",TOdenom,"_p",beta,"_",projectname,"_clustering",sep=""))
+      dendroname=paste(simType,"-",overlapType,"_",TOtype,"_",TOdenom,"_p",beta,"_",projectname,"_dendrogram.pdf",sep="")
   	  pdf(file=dendroname,bg="transparent",width=24,height=12)
 			plot(cluster1,labels=F,main=paste(simType," ",overlapType," ",TOtype," ",TOdenom,", p",beta," ",length(cluster1$order)," features",sep=""))
 			dev.off()
 			
 		} else {
 			
-			 load(paste(simType,"-",overlapType,"_",TOtype,"_",TOdenom,"_p",beta,"_",projectname,"_",length(simMat[,1]),"_clustering",sep=""))
+			 load(paste(simType,"-",overlapType,"_",TOtype,"_",TOdenom,"_p",beta,"_",projectname,"_clustering",sep=""))
 			
 		}
 		
@@ -789,8 +785,8 @@ FindModules=function(
 		
 		cluster1=flashClust(as.dist(1-simMat),method="complete")
 		collectGarbage()
-		save(cluster1,file=paste(simType,"_p",beta,"_",projectname,"_",length(cluster1$order),"_clustering",sep=""))
-		dendroname=paste(simType,"_p",beta,"_",projectname,"_",length(cluster1$order),"_dendrogram.pdf",sep="")
+		save(cluster1,file=paste(simType,"_p",beta,"_",projectname,"_clustering",sep=""))
+		dendroname=paste(simType,"_p",beta,"_",projectname,"_dendrogram.pdf",sep="")
 		pdf(file=dendroname,bg="transparent",width=24,height=12)
 		plot(cluster1,labels=F,main=paste(simType,", p",beta," ",length(cluster1$order)," features",sep=""))
 		dev.off()
@@ -893,13 +889,12 @@ FindModules=function(
 				
 				if(overlapType=="TO"){
 					
-					fileheader=paste(simType,"-",overlapType,"_",TOtype,"_",TOdenom,"_signum",signif(signum,3),"_minSize",minSizevec[j],"_merge_",merge.by,"_",merge.param,"_",length(datExpr1[1,]),sep="")
+					fileheader=paste(simType,"-",overlapType,"_",TOtype,"_",TOdenom,"_signum",signumvec[i],"_minSize",minSizevec[j],"_merge_",merge.by,"_",merge.param,sep="")
 					
 				} else {
 					
-					#fileheader=paste(simType,"-",overlapType,"_signum",signif(signum,3),"_minSize",minSizevec[j],"_merge_",merge.by,"_",merge.param,"_",length(datExpr1[1,]),sep="")
-				  fileheader=paste(simType,"-",overlapType,"_signum",signif(signumvec[i],3),"_minSize",minSizevec[j],"_merge_",merge.by,"_",merge.param,sep="")
-				  
+					fileheader=paste(simType,"-",overlapType,"_signum",signumvec[i],"_minSize",minSizevec[j],"_merge_",merge.by,"_",merge.param,sep="")
+				
 				}
 				
 				dir.create(fileheader)
@@ -1237,6 +1232,7 @@ FindModules=function(
 						kME1pval=corPvalueStudent(kME1,length(sampleindex))
 ## Convention: p-values for perfect positive or negative correlations will be set to 1e-300 so as not to break downstream code.  Very, very rare event.
 						kME1pval[is.na(kME1pval)]=1e-300
+						save.image("~/debugFM.RData")
 						kMEtable=data.frame(kMEtable,t(kME1),t(kME1pval))
 						colnames(kMEtable)[length(geneinfo)+(2*count1)+1]=paste("kME",colnames(MEdf)[k],sep="")
 						colnames(kMEtable)[length(geneinfo)+(2*count1)+2]=paste("kME",colnames(MEdf)[k],".pval",sep="")
@@ -1751,14 +1747,7 @@ FindModules=function(
 					
 					collectGarbage()
 					
-					#NQS=rbind(NQS,data.frame(Network=count,Similarity=simType,RelSignum=signumvec[i],Signum=signum,MinSize=minSize,MergeBy=merge.by,MergeParam=merge.param,InitialModules=initialModules,FinalModules=finalModules,ChangeModules=0,Members=length(unique(unlist(modules))),MeanSpecificity=mean(QM$Specificity),NGModularity=ModOut$NGMod,GModularity=ModOut$GMod,MeanQbase=ModOut$MeanQbase,MeanHomogeneity=mean(HScores),MeanPC1VE=mean(PC1VE),MeanSeparation=mean(SScores),MeanZKmodgenes=meanZKmodgenes,MeanZKbigmodgenes=meanZKbigmodgenes,MeanZCmodgenes=meanZCmodgenes,MeanZCbigmodgenes=meanZCbigmodgenes,corModKC=C.k,reachFreqOut))	
-					
-					NQS$ChangeModules=(NQS$FinalModules-NQS$InitialModules)/NQS$InitialModules*100
-					NQS$ChangeModules[NQS$InitialModules==0]=NA
-					NQS=NQS[order(NQS$MinSize,-NQS$Signum),]
-	
-					#write.table(data.frame(t(NQS)),file=paste(simType,"-",overlapType,"_p",beta,"_",projectname,"_",length(cluster1$order),"_network_statistics_",tstamp1,".csv",sep=""),sep=",",row.names=T,col.names=F)
-					write.table(data.frame(t(NQS)),file=paste(simType,"-",overlapType,"_signum",signum[i],"_minSize",minSizevec[j],"_merge_",merge.by,"_",merge.param,"_network_statistics.csv",sep=""),sep=",",row.names=T,col.names=F)
+					NQS=rbind(NQS,data.frame(Network=count,Similarity=simType,RelSignum=signumvec[i],Signum=signum,MinSize=minSize,MergeBy=merge.by,MergeParam=merge.param,InitialModules=initialModules,FinalModules=finalModules,ChangeModules=0,Members=length(unique(unlist(modules))),MeanSpecificity=mean(QM$Specificity),NGModularity=ModOut$NGMod,GModularity=ModOut$GMod,MeanQbase=ModOut$MeanQbase,MeanHomogeneity=mean(HScores),MeanPC1VE=mean(PC1VE),MeanSeparation=mean(SScores),MeanZKmodgenes=meanZKmodgenes,MeanZKbigmodgenes=meanZKbigmodgenes,MeanZCmodgenes=meanZCmodgenes,MeanZCbigmodgenes=meanZCbigmodgenes,corModKC=C.k,reachFreqOut))	
 					
 				} else { ## end of if(length(modules)>0&length(modules)<436)
 				
@@ -1777,16 +1766,8 @@ FindModules=function(
 					RFOnames=c("ALL","ALLreachPcnt","ALLredundPcnt","ALLratio","TopZK","ZKreachPcnt","ZKredundPcnt","ZKratio",
 							   "TopZC","ZCreachPcnt","ZCredundPcnt","ZCratio","TopZCK","ZCKreachPcnt","ZCKredundPcnt","ZCKratio")
 					colnames(reachFreqOut)=RFOnames[1:length(reachFreqOut)]
-					
-					#NQS=rbind(NQS,data.frame(Network=count,Similarity=simType,RelSignum=signumvec[i],Signum=signum,MinSize=minSize,MergeBy=merge.by,MergeParam=merge.param,InitialModules=NA,FinalModules=NA,ChangeModules=NA,Members=NA,MeanSpecificity=NA,NGModularity=NA,GModularity=NA,MeanQbase=NA,MeanHomogeneity=NA,MeanPC1VE=NA,MeanSeparation=NA,MeanZKmodgenes=NA,MeanZKbigmodgenes=NA,MeanZCmodgenes=NA,MeanZCbigmodgenes=NA,corModKC=NA,reachFreqOut))
-					
-					NQS$ChangeModules=(NQS$FinalModules-NQS$InitialModules)/NQS$InitialModules*100
-					NQS$ChangeModules[NQS$InitialModules==0]=NA
-					NQS=NQS[order(NQS$MinSize,-NQS$Signum),]
-					
-					#write.table(data.frame(t(NQS)),file=paste(simType,"-",overlapType,"_p",beta,"_",projectname,"_",length(cluster1$order),"_network_statistics_",tstamp1,".csv",sep=""),sep=",",row.names=T,col.names=F)
-					write.table(data.frame(t(NQS)),file=paste(simType,"-",overlapType,"_signum",signum[i],"_minSize",minSizevec[j],"_merge_",merge.by,"_",merge.param,"_network_statistics.csv",sep=""),sep=",",row.names=T,col.names=F)
-					
+					NQS=rbind(NQS,data.frame(Network=count,Similarity=simType,RelSignum=signumvec[i],Signum=signum,MinSize=minSize,MergeBy=merge.by,MergeParam=merge.param,InitialModules=NA,FinalModules=NA,ChangeModules=NA,Members=NA,MeanSpecificity=NA,NGModularity=NA,GModularity=NA,MeanQbase=NA,MeanHomogeneity=NA,MeanPC1VE=NA,MeanSeparation=NA,MeanZKmodgenes=NA,MeanZKbigmodgenes=NA,MeanZCmodgenes=NA,MeanZCbigmodgenes=NA,corModKC=NA,reachFreqOut))
+						  
 				}
 				
 				setwd(BNrootDir)
@@ -1795,12 +1776,37 @@ FindModules=function(
 				
 		}  ## end of for(i in c(1:length(signumvec)))
 		
-		# NQS$ChangeModules=(NQS$FinalModules-NQS$InitialModules)/NQS$InitialModules*100
-		# NQS$ChangeModules[NQS$InitialModules==0]=NA
-		# NQS=NQS[order(NQS$MinSize,-NQS$Signum),]
-		# setwd(BNrootDir)		
-		# write.table(data.frame(t(NQS)),file=paste(simType,"-",overlapType,"_p",beta,"_",projectname,"_",length(cluster1$order),"_network_statistics_",tstamp1,".csv",sep=""),sep=",",row.names=T,col.names=F)
-		# write.table(data.frame(t(NQS)),file=paste(simType,"-",overlapType,"_p",beta,"_",projectname,"_network_statistics.csv",sep=""),sep=",",row.names=T,col.names=F)
+		NQS$ChangeModules=(NQS$FinalModules-NQS$InitialModules)/NQS$InitialModules*100
+		NQS$ChangeModules[NQS$InitialModules==0]=NA
+		NQS=NQS[order(NQS$MinSize,-NQS$Signum),]
+		setwd(BNrootDir)		
+		write.table(data.frame(t(NQS)),file=paste(simType,"-",overlapType,"_p",beta,"_",projectname,"_network_statistics.csv",sep=""),sep=",",row.names=T,col.names=F)
+		
+## Graphical output:
+	
+		NQSseq=c(7,8,10,11,12,13,14,15,16,17,18,19,20,21,22,sort(c(grep("reach",colnames(NQS)),grep("redund",colnames(NQS)))))
+		zrot=130
+		xrot=-60
+		yrot=0
+		
+		pdf(file=paste(simType,"-",overlapType,"_p",beta,"_",projectname,"_network_statistics.pdf",sep=""))
+		
+		for(i in c(1:length(NQSseq))){
+			
+			whichCol=NQSseq[i]
+			matModules=matrix(nrow=length(signumvec),ncol=length(minSizevec),data=c(NQS[,whichCol]))
+			rownames(matModules)=signumvec
+			colnames(matModules)=minSizevec
+		
+			print(wireframe(matModules,shade=TRUE,aspect=c(20/20,1),light.source=c(1,0,1),ylab="minSize",xlab="RelSignum",zlab=list(colnames(NQS)[whichCol],rot=90),
+				  scales=list(arrows=FALSE),
+				  screen=list(z=zrot,x=xrot,y=yrot)))
+			
+			}
+		
+		dev.off()
+
+							  
 
 	} else { #if(iterate==TRUE)
 				  
@@ -1812,6 +1818,8 @@ FindModules=function(
 						tstamp1=gsub(" PM","",tstamp1)
 						tstamp1=gsub(":","-",tstamp1)
 		
+						signum1=signum
+						
 						if(signumType=="rel"){
 		
 							relsignum=signum
@@ -1830,20 +1838,20 @@ FindModules=function(
 		
 							}
 						  
-							  rm(simMat)
-							  collectGarbage()	
-							  
-							  cutree1=cutree(cluster1,h=1-signum)
-							  
-							  keptmodsDF=data.frame(table(cutree1))
+					  rm(simMat)
+					  collectGarbage()	
+					  
+					  cutree1=cutree(cluster1,h=1-signum)
+					  
+					  keptmodsDF=data.frame(table(cutree1))
 							  							  
 						if(overlapType=="TO"){
 							  
-							fileheader=paste(simType,"-",overlapType,"_",TOtype,"_",TOdenom,"_signum",signif(signum,3),"_minSize",minSize,"_mergeBy_",merge.by,merge.param,"_",length(datExpr1[1,]),sep="")
+							fileheader=paste(simType,"-",overlapType,"_",TOtype,"_",TOdenom,"_signum",signum1,"_minSize",minSize,"_mergeBy_",merge.by,"_",merge.param,sep="")
 							  
 							} else {
 							  
-							fileheader=paste(simType,"-",overlapType,"_signum",signif(signum,3),"_minSize",minSize,"_mergeBy_",merge.by,merge.param,"_",length(datExpr1[1,]),sep="")
+							fileheader=paste(simType,"-",overlapType,"_signum",signum1,"_minSize",minSize,"_mergeBy_",merge.by,"_",merge.param,sep="")
 							  
 							}
 							  
@@ -2688,10 +2696,11 @@ FindModules=function(
 										
 								}
 										
-							  #setwd(BNrootDir)
+							  setwd(BNrootDir)
 																				
-							  write.table(data.frame(t(NQS)),file=paste("Network_statistics_",tstamp1,".csv",sep=""),sep=",",row.names=T,col.names=F)
-										
+							  #write.table(data.frame(t(NQS)),file=paste("Network_statistics_",tstamp1,".csv",sep=""),sep=",",row.names=T,col.names=F)
+							  write.table(data.frame(t(NQS)),file=paste(simType,"-",overlapType,"_p",beta,"_",projectname,"_network_statistics.csv",sep=""),sep=",",row.names=T,col.names=F)
+							  
 							  collectGarbage()
 		
 	} ## end of if(iterate==TRUE
@@ -2699,37 +2708,4 @@ FindModules=function(
 	timestamp()
 	
 } ## end of function
-
-FindModules(projectname,
-            expr,
-            geneinfo,
-            sampleindex,
-            samplegroups=NULL,
-            subset=NULL,
-            simMat=NULL,
-            saveSimMat=FALSE,
-            simType,
-            overlapType,
-            TOtype,
-            TOdenom,
-            beta=1,
-            MIestimator="mi.mm",
-            MIdisc="equalfreq",
-            signumType=c("abs","rel"),
-            iterate=FALSE,
-            signumvec=c(.999,.99,.98),
-            minsizevec=c(8,10,12),
-            signum,
-            minSize,
-            merge.by=c("ME","CC"),
-            merge.param,
-            export.merge.comp=T,
-            ZNCcut=2,
-            calcSW=FALSE,
-            loadTree=FALSE,
-            writeKME=FALSE,
-            calcBigModStat=FALSE,
-            writeModSnap=TRUE
-            )
-
 
