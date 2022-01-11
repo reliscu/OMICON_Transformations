@@ -1,8 +1,6 @@
-.libPaths("/home/shared/R/x86_64-pc-linux-gnu-library/4.0")
-
 library(yaml)
 
-compareConfig <- function() {
+updateConfig <- function() {
   
   default <- read_yaml("DefaultParamConfig.yaml")
   instance <- read_yaml("Snakemake/config/ParamConfig.yaml")

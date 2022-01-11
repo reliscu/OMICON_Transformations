@@ -3,7 +3,7 @@ transformation = "FindModules"
 workdir: "/home/rebecca/omicon/transformations/" + transformation
 configfile: "Snakemake/config/ParamConfig.yaml"
 include: "/home/rebecca/omicon/transformations/helper_functions/helper.smk" 
-shell("Rscript /home/rebecca/omicon/transformations/helper_functions/updateConfig/updateConfig.R")
+shell("Rscript /home/rebecca/omicon/transformations/helper_functions/updateConfig/updateConfig_Driver.R")
 
 if config['overlapType'] != 'None':
    networks = expand(["Snakemake/results/{simType}-{overlapType}_{TOtype}_{TOdenom}_signum{signumvec}_minSize{minsizevec}_merge_{mergeBy}_{mergeParam}",
@@ -47,16 +47,17 @@ rule map_identifiers:
       expr = lambda wc: "Snakemake/resources/" + str(config['expr']),
       mappingTable = lambda wc: "Snakemake/resources/" + str(config['mappingTable'])
    output: 
-      temp("Snakemake/results/expr.csv")
+      temp("Snakemake/results/mapped_expr.csv")
    script:
-      "/home/rebecca/omicon/transformations/helper_functions/map2Symbol.R"
+      "/home/rebecca/omicon/transformations/map2Symbol/map2Symbol_Driver.R"
 
 rule FindModules:
    input:
-      "Snakemake/results/expr.csv"
+      "Snakemake/results/mapped_expr.csv"
    output:
       networks
-   threads: 10
+   threads:
+      10
    script:
-      "../../FindModules_Driver.R"
+      "/home/rebecca/omicon/transformations/FindModules/FindModules_Driver.R"
 

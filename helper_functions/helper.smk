@@ -2,7 +2,7 @@ rule session_info:
    output:
       sessionInfo = "Snakemake/results/{projectname}_SessionInfo.csv"
    script:
-      "/home/rebecca/omicon/transformations/helper_functions/makeSessionInfo/makeSessionInfo.R"
+      "/home/rebecca/omicon/transformations/helper_functions/makeSessionInfo/makeSessionInfo_Driver.R"
 
 rule param_config:
    output:

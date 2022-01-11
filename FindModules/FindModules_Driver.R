@@ -1,8 +1,10 @@
-source("renv/activate.R")
-source("../helper_functions/load_renv.R")
-source("FindModules.R")
-      
-allowWGCNAThreads(nThreads = snakemake@threads)
+source("../helper_functions/renv_functions/load_renv.R")
+load_renv(lock.path = "renv.lock")
+
+source("FindModules_Function.R")
+if(snakemake@threads>1) {
+  allowWGCNAThreads(nThreads = snakemake@threads)
+} 
 
 expr <- as.data.frame(fread(snakemake@input[[1]]))
 sampleindexEnd <- snakemake@config[['sampleindexEnd']]

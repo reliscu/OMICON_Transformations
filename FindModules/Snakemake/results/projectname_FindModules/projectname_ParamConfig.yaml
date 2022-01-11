@@ -1,0 +1,47 @@
+projectname: projectname
+analyst: Rebecca Eliscu
+mappingTable: Affymetrix_Human_Gene_1.0_ST_Transcript_Cluster_PROBEID_SYMBOL.csv
+expr: E-MEXP-3239_All_40_ComBat.csv
+geneinfo:
+- 1
+- 2
+sampleindexStart: 3
+sampleindexEnd: ncol(expr)
+samplegroups: ~
+subset: ~
+simMat: ~
+saveSimMat: no
+simType: Bicor
+beta: 1
+overlapType: None
+TOtype: signed
+TOdenom: min
+MIestimator: mi.mm
+MIdisc: equalfreq
+signumType: rel
+iterate: yes
+signumvec:
+- 0.9999
+- 0.999
+- 0.99
+- 0.98
+- 0.97
+- 0.96
+minsizevec:
+- 6
+- 8
+- 10
+- 12
+- 15
+- 20
+signum: ~
+minSize: ~
+merge.by: CC
+merge.param: 0.85
+export.merge.comp: yes
+ZNCcut: 2
+calcSW: no
+loadTree: no
+writeKME: yes
+calcBigModStat: no
+writeModSnap: yes

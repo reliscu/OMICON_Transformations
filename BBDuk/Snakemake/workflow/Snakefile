@@ -3,7 +3,7 @@ transformation = "BBDuk"
 workdir: "/home/rebecca/omicon/transformations/" + transformation
 configfile: "Snakemake/config/ParamConfig.yaml"
 include: "/home/rebecca/omicon/transformations/helper_functions/helper.smk"
-shell("Rscript /home/rebecca/omicon/transformations/helper_functions/updateConfig/updateConfig.R")
+shell("Rscript /home/rebecca/omicon/transformations/helper_functions/updateConfig/updateConfig_Driver.R")
 
 sample, = glob_wildcards("Snakemake/resources/{sample}_R1_FASTQ.fastq")
 
